@@ -23,7 +23,8 @@ var gLevel = {
 }
 
 var gGame = {
-  isOn: false,       
+  isOn: false,
+  isFirstClick: true,       
   revealedCount: 0,   
   markedCount: 0,    
   secsPassed: 0      
@@ -37,6 +38,9 @@ function onInit() {
 //   renderBoard(gBoard);
 console.log('Game initialized!');
   gGame.isOn = true;
+  gGame.isFirstClick = true
+  gGame.revealedCount = 0
+  gGame.markedCount = 0
   gBoard = buildBoard();
   setMinesNegsCount(gBoard);
   console.table(gBoard);
@@ -68,8 +72,8 @@ function buildBoard() {
 //   board[1][2]= MINE
 //   board[2][3]= MINE
 //   console.log(' Mines placed at [1,2] and [2,3]')
-    board[1][2].isMine = true;
-    board[2][3].isMine = true;
+    // board[1][2].isMine = true;
+    // board[2][3].isMine = true;
 
 
   return board;  
@@ -101,6 +105,7 @@ function setMinesNegsCount(board) {
   }
   console.table(board);
 }
+
 function renderBoard(board) {
   console.log('Rendering board...');
   var strHTML = ''
@@ -153,6 +158,14 @@ function onCellClicked(elCell, i, j) {
     return;
   }
 
+if (gGame.isFirstClick) {
+    console.log('safe- first click');
+    placeMines(gBoard, i, j);
+    setMinesNegsCount(gBoard);
+    console.table(gBoard);
+    gGame.isFirstClick = false;
+  }
+
 // mark reveald cell
   cell.isRevealed = true;
   gGame.revealedCount++;
@@ -182,3 +195,24 @@ function revealAllMines() {
   }
   renderBoard(gBoard);
 }
+
+function placeMines(board, safeI, safeJ) {
+  console.log(`placeMines: place ${gLevel['Beginner'].MINES} Mines,insted of[${safeI},${safeJ}]`);
+  let minesToPlace = gLevel['Beginner'].MINES;
+
+  // counts mine befor palcment
+  while (minesToPlace > 0) {
+    const i = getRandomInt(0, board.length);
+    const j = getRandomInt(0, board[i].length);
+    
+    
+    if ((i === safeI && j === safeJ) || board[i][j].isMine) continue;
+
+    // updating the model
+    board[i][j].isMine = true; 
+    console.log(`Mine #${gLevel['Beginner'].MINES - minesToPlace + 1} in[${i},${j}]`);
+    minesToPlace--;
+  }
+
+  console.table(board); // updated model
+  }
