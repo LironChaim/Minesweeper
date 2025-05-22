@@ -117,15 +117,18 @@ function renderBoard(board) {
     for (var j = 0; j < board[i].length; j++) {
       var cell = board[i][j];
       var content = '';
-
-      if (cell.isMine) {
+      var className = '';
+// add class if revealed
+      if (cell.isRevealed) {
+        className = 'revealed';
+      if (cell.isMine) 
         content = MINE;
-      } else if (cell.minesAroundCount > 0) {
+       else if (cell.minesAroundCount > 0) 
         content = cell.minesAroundCount;
       }
 
-      console.log(`Rendering cell [${i},${j}]:`, content || '(empty)');
-      strHTML += `<td class="cell">${content}</td>`;
+    //   console.log(`Rendering cell [${i},${j}]:`, content || '(empty)');
+      strHTML += `<td class="cell ${className}" onclick="onCellClicked(this, ${i}, ${j})">${content}</td>`;
     }
     strHTML += '</tr>';
   }
@@ -134,4 +137,48 @@ function renderBoard(board) {
 
     var elBoard = document.querySelector('.board')
     elBoard.innerHTML = strHTML;
+}
+
+function onCellClicked(elCell, i, j) {
+  console.log('Cell clicked:', i, j);
+  var cell = gBoard[i][j];
+
+  // chack for game ON
+  if (!gGame.isOn) {
+    console.log('game is not ON');
+    return;
+  }
+  if (cell.isRevealed || cell.isMarked) {
+    console.log(' Cell revealed / flagged');
+    return;
+  }
+
+// mark reveald cell
+  cell.isRevealed = true;
+  gGame.revealedCount++;
+  console.log(`RevealedCount:' ${gGame.revealedCount}`);
+
+  // if maine reveal all - game over
+  if (cell.isMine) {
+    console.log('clicked a mine.');
+    revealAllMines();
+    gGame.isOn = false;
+    return;
+  }
+
+    console.log(`cell/neighbors = ${cell.minesAroundCount}`);
+  // repeat render board
+  renderBoard(gBoard);
+}
+
+function revealAllMines() {
+  console.log('reveal mines');
+  for (var i = 0; i < gBoard.length; i++) {
+    for (var j = 0; j < gBoard[i].length; j++) {
+      if (gBoard[i][j].isMine) {
+        gBoard[i][j].isRevealed = true;
+      }
+    }
+  }
+  renderBoard(gBoard);
 }
