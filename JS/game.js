@@ -24,7 +24,8 @@ var gLevel = {
 
 var gGame = {
   isOn: false,
-  isFirstClick: true,       
+  isFirstClick: true, 
+  lives: 3,      
   revealedCount: 0,   
   markedCount: 0,    
   secsPassed: 0      
@@ -39,12 +40,15 @@ function onInit() {
 console.log('Game initialized!');
   gGame.isOn = true;
   gGame.isFirstClick = true
+  gGame.lives = 3
   gGame.revealedCount = 0
   gGame.markedCount = 0
   gBoard = buildBoard();
   setMinesNegsCount(gBoard);
   console.table(gBoard);
   renderBoard(gBoard);
+  renderLives ()
+  renderSmiley ('normal')
 } 
 
 function buildBoard() {
@@ -176,13 +180,39 @@ if (gGame.isFirstClick) {
     console.log('clicked a mine.');
     revealAllMines();
     gGame.isOn = false;
-    return;
-  }
+    gGame.lives--;
+    renderLives();
+if (gGame.lives === 0) {
+    revealAllMines()
+    gGame.isOn = false
+    renderSmiley ('dead')
+}else {
+    setTimeout (()=> {
+        cell.isRevealed = false
+        renderBoard(gBoard) 
+        }, 800)
+}
+return;
+
+    }
 
     console.log(`cell/neighbors = ${cell.minesAroundCount}`);
   // repeat render board
   renderBoard(gBoard);
+  checkVictory();
 }
+
+function checkVictory() {
+  var size = gLevel['Beginner'].SIZE;
+  var totalCells = size * size;
+  var minesCount = gLevel['Beginner'].MINES;
+  if (gGame.revealedCount === totalCells - minesCount) {
+    console.log('WIN');
+    gGame.isOn = false;
+    renderSmiley('cool');
+  }
+}
+
 
 function revealAllMines() {
   console.log('reveal mines');
@@ -216,3 +246,25 @@ function placeMines(board, safeI, safeJ) {
 
   console.table(board); // updated model
   }
+
+  function renderLives() {
+  var elLives = document.getElementById('lives-count');
+  elLives.innerText = gGame.lives;
+  console.log('Lives left:', gGame.lives);
+  }
+
+  function renderSmiley(state) {
+  var elSmiley = document.querySelector('.smiley');
+  switch (state) {
+    case 'normal':
+      elSmiley.innerText = '😃';
+      break;
+    case 'dead':
+      elSmiley.innerText = '💀';
+      break;
+    case 'cool':
+      elSmiley.innerText = '😎';
+      break;
+  }
+  console.log('Smiley is', elSmiley.innerText);
+}
