@@ -44,7 +44,7 @@ console.log('Game initialized!');
   gGame.revealedCount = 0
   gGame.markedCount = 0
   gBoard = buildBoard();
-  setMinesNegsCount(gBoard);
+//   setMinesNegsCount(gBoard);
   console.table(gBoard);
   renderBoard(gBoard);
   renderLives ()
@@ -137,7 +137,9 @@ function renderBoard(board) {
       }
 
     //   console.log(`Rendering cell [${i},${j}]:`, content || '(empty)');
-      strHTML += `<td class="cell ${className}" onclick="onCellClicked(this, ${i}, ${j})">${content}</td>`;
+      strHTML += `<td class="cell ${className}" onclick="onCellClicked(this, ${i}, ${j})"
+               oncontextmenu="onCellMarked(event, this, ${i}, ${j})">
+              ${cell.isMarked ? FLAG : content}</td>`;
     }
     strHTML += '</tr>';
   }
@@ -198,6 +200,21 @@ return;
 
     console.log(`cell/neighbors = ${cell.minesAroundCount}`);
   // repeat render board
+  renderBoard(gBoard);
+  checkVictory();
+}
+
+function onCellMarked(ev, elCell, i, j) {
+  ev.preventDefault();
+  if (!gGame.isOn) return;
+
+  var cell = gBoard[i][j];
+  if (cell.isRevealed) return;
+
+  cell.isMarked = !cell.isMarked;
+  gGame.markedCount += cell.isMarked ? 1 : -1;
+  console.log(`🚩 MarkedCount = ${gGame.markedCount}`);
+
   renderBoard(gBoard);
   checkVictory();
 }
